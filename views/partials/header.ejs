@@ -1,0 +1,21 @@
+<header class="bg-blue-600 text-white shadow-lg">
+    <div class="container mx-auto px-4 py-4">
+        <div class="flex justify-between items-center">
+            <h1 class="text-2xl font-bold">
+                <a href="/chat" class="hover:text-blue-200">Chat App</a>
+            </h1>
+            
+            <% if (typeof currentUser !== 'undefined' && currentUser) { %>
+                <nav class="flex items-center space-x-4">
+                    <a href="/chat" class="hover:text-blue-200">Chats</a>
+                    <a href="/profile" class="hover:text-blue-200">Profile</a>
+                    <form action="/auth/logout" method="POST" class="inline">
+                        <button type="submit" class="bg-red-500 hover:bg-red-600 px-3 py-1 rounded">
+                            Logout
+                        </button>
+                    </form>
+                </nav>
+            <% } %>
+        </div>
+    </div>
+</header>

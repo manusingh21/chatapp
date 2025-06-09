@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%=  'Chat App' %></title>
+    <link rel="stylesheet" href="/css/style.css">
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script>
+        window.SUPABASE_URL = '<%= process.env.SUPABASE_URL %>';
+        window.SUPABASE_ANON_KEY = '<%= process.env.SUPABASE_ANON_KEY %>';
+    </script>
+</head>
+<body>
+  
+    <script src="/js/chat.js"></script>
+</body>
+</html>

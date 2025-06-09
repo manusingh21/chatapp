@@ -1,0 +1,117 @@
+<%- include('../layouts/main.ejs')  %>
+
+
+<div class="chat-container" data-conversation-id="<%= conversationId %>">
+    <div class="chat-header">
+        <button class="back-button" onclick="window.location.href='/chat'">←</button>
+        <div class="avatar" style="position: relative;">
+            <% if (otherUser.avatar_url) { %>
+                <img src="<%= otherUser.avatar_url %>" alt="<%= otherUser.username %>">
+            <% } else { %>
+                <%= otherUser.username.charAt(0).toUpperCase() %>
+            <% } %>
+            <% if (otherUser.is_online) { %>
+                <div class="online-indicator"></div>
+            <% } %>
+        </div>
+        <div>
+            <div class="conversation-name"><%= otherUser.full_name || otherUser.username %></div>
+            <div class="text-sm <%= otherUser.is_online ? 'status-online' : 'status-offline' %>">
+                <%= otherUser.is_online ? 'Online' : 'Offline' %>
+            </div>
+        </div>
+    </div>
+    
+    <div id="messagesContainer" class="messages-container">
+        <% messages.forEach(message => { %>
+            <div class="message <%= message.sender_id === user.id ? 'own' : '' %>">
+                <div class="message-bubble">
+                    <% if (message.message_type === 'image' && message.image_url) { %>
+                        <img src="<%= message.image_url %>" alt="Image" class="message-image" loading="lazy">
+                    <% } else { %>
+                        <%= message.content %>
+                    <% } %>
+                    <div class="message-time">
+                        <%= new Date(message.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) %>
+                    </div>
+                </div>
+            </div>
+        <% }) %>
+    </div>
+    
+    <div class="message-input-container">
+        <textarea id="messageInput" 
+                  class="message-input" 
+                  placeholder="Type a message..." 
+                  rows="1"></textarea>
+        
+        <div class="input-actions">
+            <input type="file" id="imageInput" class="file-input" accept="image/*">
+            <button id="imageButton" class="action-button" title="Send Image">
+                📷
+            </button>
+            
+            <button id="emojiButton" class="action-button" title="Emojis">
+                😊
+            </button>
+            
+            <button id="sendButton" class="action-button send-button" title="Send">
+                ➤
+            </button>
+        </div>
+    </div>
+    
+    <div id="emojiPicker" class="emoji-picker">
+        <div class="emoji-grid">
+            <button class="emoji-button">😀</button>
+            <button class="emoji-button">😃</button>
+            <button class="emoji-button">😄</button>
+            <button class="emoji-button">😁</button>
+            <button class="emoji-button">😆</button>
+            <button class="emoji-button">😅</button>
+            <button class="emoji-button">😂</button>
+            <button class="emoji-button">🤣</button>
+            <button class="emoji-button">😊</button>
+            <button class="emoji-button">😇</button>
+            <button class="emoji-button">🙂</button>
+            <button class="emoji-button">🙃</button>
+            <button class="emoji-button">😉</button>
+            <button class="emoji-button">😌</button>
+            <button class="emoji-button">😍</button>
+            <button class="emoji-button">🥰</button>
+            <button class="emoji-button">😘</button>
+            <button class="emoji-button">😗</button>
+            <button class="emoji-button">😙</button>
+            <button class="emoji-button">😚</button>
+            <button class="emoji-button">😋</button>
+            <button class="emoji-button">😛</button>
+            <button class="emoji-button">😝</button>
+            <button class="emoji-button">😜</button>
+            <button class="emoji-button">🤪</button>
+            <button class="emoji-button">🤨</button>
+            <button class="emoji-button">🧐</button>
+            <button class="emoji-button">🤓</button>
+            <button class="emoji-button">😎</button>
+            <button class="emoji-button">🤩</button>
+            <button class="emoji-button">🥳</button>
+            <button class="emoji-button">👍</button>
+            <button class="emoji-button">👎</button>
+            <button class="emoji-button">👌</button>
+            <button class="emoji-button">✌️</button>
+            <button class="emoji-button">🤞</button>
+            <button class="emoji-button">🤟</button>
+            <button class="emoji-button">🤘</button>
+            <button class="emoji-button">🤙</button>
+            <button class="emoji-button">❤️</button>
+            <button class="emoji-button">🧡</button>
+            <button class="emoji-button">💛</button>
+            <button class="emoji-button">💚</button>
+            <button class="emoji-button">💙</button>
+            <button class="emoji-button">💜</button>
+            <button class="emoji-button">🔥</button>
+            <button class="emoji-button">💯</button>
+            <button class="emoji-button">💫</button>
+            <button class="emoji-button">⭐</button>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,62 @@
+<%- include('../layouts/main.ejs')  %>
+
+
+<div class="container">
+    <div class="header">
+        <h1>Chats</h1>
+        <div class="header-actions">
+            <a href="/profile" class="btn btn-secondary">Profile</a>
+            <form action="/auth/logout" method="POST" style="display: inline;">
+                <button type="submit" class="btn btn-secondary">Logout</button>
+            </form>
+        </div>
+    </div>
+    
+    <div class="search-container">
+        <input type="text" 
+               id="searchInput" 
+               class="search-input" 
+               placeholder="Search users by name, username, or email...">
+        <div id="searchResults" class="search-results"></div>
+    </div>
+    
+    <div class="conversations-list">
+        <% if (conversations.length === 0) { %>
+            <div style="padding: 2rem; text-align: center; color: #6b7280;">
+                <p>No conversations yet</p>
+                <p class="text-sm">Search for users above to start chatting</p>
+            </div>
+        <% } else { %>
+            <% conversations.forEach(conversation => { %>
+                <a href="/chat/conversation/<%= conversation.id %>" class="conversation-item">
+                    <div class="avatar" style="position: relative;">
+                        <% if (conversation.otherUser.avatar_url) { %>
+                            <img src="<%= conversation.otherUser.avatar_url %>" alt="<%= conversation.otherUser.username %>">
+                        <% } else { %>
+                            <%= conversation.otherUser.username.charAt(0).toUpperCase() %>
+                        <% } %>
+                        <% if (conversation.otherUser.is_online) { %>
+                            <div class="online-indicator"></div>
+                        <% } %>
+                    </div>
+                    <div class="conversation-info">
+                        <div class="conversation-name">
+                            <%= conversation.otherUser.full_name || conversation.otherUser.username %>
+                        </div>
+                        <div class="conversation-preview">
+                            <% if (conversation.lastMessage) { %>
+                                <% if (conversation.lastMessage.message_type === 'image') { %>
+                                    📷 Image
+                                <% } else { %>
+                                    <%= conversation.lastMessage.content.substring(0, 50) %>
+                                <% } %>
+                            <% } else { %>
+                                Start a conversation
+                            <% } %>
+                        </div>
+                    </div>
+                </a>
+            <% }) %>
+        <% } %>
+    </div>
+</div>

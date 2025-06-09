@@ -1,0 +1,37 @@
+<%- include('../layouts/main.ejs') %>
+
+<div class="form-container">
+    <div class="form-card">
+        <h1 class="text-center mb-2">Login to Chat</h1>
+        
+        <% if (locals.error) { %>
+            <div class="text-red text-sm text-center mb-2">
+                <%= error %>
+            </div>
+        <% } %>
+        
+        <% if (locals.message) { %>
+            <div class="text-green text-sm text-center mb-2">
+                <%= message %>
+            </div>
+        <% } %>
+        
+        <form action="/auth/login" method="POST">
+            <div class="form-group">
+                <label for="email" class="form-label">Email</label>
+                <input type="email" id="email" name="email" class="form-input" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="password" class="form-label">Password</label>
+                <input type="password" id="password" name="password" class="form-input" required>
+            </div>
+            
+            <button type="submit" class="btn btn-primary btn-block">Login</button>
+        </form>
+        
+        <div class="text-center mt-2">
+            <a href="/auth/register" class="text-sm">Don't have an account? Register</a>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,61 @@
+<%- include('../layouts/main.ejs')  %>
+
+
+<div class="profile-container">
+    <div class="header">
+        <button class="back-button" onclick="window.location.href='/chat'">←</button>
+        <h1>Profile</h1>
+        <form action="/auth/logout" method="POST" style="display: inline;">
+            <button type="submit" class="btn btn-secondary">Logout</button>
+        </form>
+    </div>
+    
+    <% if (locals.query && query.success) { %>
+        <div class="text-green text-center mb-2">Profile updated successfully!</div>
+    <% } %>
+    
+    <% if (locals.query && query.error) { %>
+        <div class="text-red text-center mb-2">Error updating profile!</div>
+    <% } %>
+    
+    <% if (profile) { %>
+        <form action="/profile/update" method="POST" enctype="multipart/form-data">
+            <div class="form-group">
+                <div class="profile-avatar avatar">
+                    <% if (profile.avatar_url) { %>
+                        <img src="<%= profile.avatar_url %>" alt="Avatar">
+                    <% } else { %>
+                        <%= profile.username.charAt(0).toUpperCase() %>
+                    <% } %>
+                </div>
+                <label for="avatar" class="form-label">Avatar</label>
+                <input type="file" id="avatar" name="avatar" class="form-input" accept="image/*">
+            </div>
+            
+            <div class="form-group">
+                <label for="fullName" class="form-label">Full Name</label>
+                <input type="text" id="fullName" name="fullName" class="form-input" 
+                       value="<%= profile.full_name || '' %>" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="username" class="form-label">Username</label>
+                <input type="text" id="username" name="username" class="form-input" 
+                       value="<%= profile.username %>" required>
+            </div>
+            
+           <div class="form-group">
+                <label class="form-label">Email</label>
+                <input type="email" class="form-input" value="<%= profile.email %>" disabled>
+                <small class="text-sm" style="color: #6b7280;">Email cannot be changed</small>
+            </div>
+            
+            <button type="submit" class="btn btn-primary btn-block">Update Profile</button>
+        </form>
+    <% } else { %>
+        <div class="text-center">
+            <p>Profile not found</p>
+            <a href="/chat" class="btn btn-primary">Go to Chat</a>
+        </div>
+    <% } %>
+</div>
