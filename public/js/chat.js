@@ -9,13 +9,15 @@ class ChatApp {
     this.searchResults = null;
     this.emojiPicker = null;
     this.isEmojiPickerVisible = false;
+    this.messageSubscription = null;
+    this.presenceSubscription = null;
     
     this.init();
   }
 
   async init() {
     try {
-      // Initialize Supabase client
+      // Initialize Supabase client - you need to add these to your EJS template
       this.supabase = supabase.createClient(
         window.SUPABASE_URL,
         window.SUPABASE_ANON_KEY
@@ -26,7 +28,8 @@ class ChatApp {
       this.currentUser = user;
 
       this.setupEventListeners();
-      this.setupRealtimeSubscription();
+      this.setupRealtimeSubscriptions();
+      this.updateOnlineStatus(true);
       
       // Auto-scroll to bottom on page load
       if (this.messagesContainer) {
@@ -126,25 +129,27 @@ class ChatApp {
     });
   }
 
-  setupRealtimeSubscription() {
-    if (!this.currentConversationId) return;
+  setupRealtimeSubscriptions() {
+    if (!this.supabase) return;
 
-    // Subscribe to new messages
-    this.supabase
-      .channel('messages')
-      .on('postgres_changes', {
-        event: 'INSERT',
-        schema: 'public',
-        table: 'messages',
-        filter: `conversation_id=eq.${this.currentConversationId}`
-      }, (payload) => {
-        this.handleNewMessage(payload.new);
-      })
-      .subscribe();
+    // Subscribe to new messages for current conversation
+    if (this.currentConversationId) {
+      this.messageSubscription = this.supabase
+        .channel(`messages-${this.currentConversationId}`)
+        .on('postgres_changes', {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'messages',
+          filter: `conversation_id=eq.${this.currentConversationId}`
+        }, (payload) => {
+          this.handleNewMessage(payload.new);
+        })
+        .subscribe();
+    }
 
-    // Subscribe to user online status
-    this.supabase
-      .channel('profiles')
+    // Subscribe to user presence/online status changes
+    this.presenceSubscription = this.supabase
+      .channel('profiles-presence')
       .on('postgres_changes', {
         event: 'UPDATE',
         schema: 'public',
@@ -153,6 +158,24 @@ class ChatApp {
         this.updateUserStatus(payload.new);
       })
       .subscribe();
+  }
+
+  async updateOnlineStatus(isOnline) {
+    if (!this.supabase || !this.currentUser) return;
+
+    try {
+      const updateData = {
+        is_online: isOnline,
+        last_seen: new Date().toISOString()
+      };
+
+      await this.supabase
+        .from('profiles')
+        .update(updateData)
+        .eq('id', this.currentUser.id);
+    } catch (error) {
+      console.error('Update online status error:', error);
+    }
   }
 
   async searchUsers(e) {
@@ -188,13 +211,39 @@ class ChatApp {
           </div>
           <div>
             <div class="conversation-name">${user.full_name || user.username}</div>
-            <div class="conversation-preview">@${user.username}</div>
+            <div class="conversation-preview">
+              @${user.username} • ${this.getPresenceText(user)}
+            </div>
           </div>
         </div>
       `).join('');
     }
     
     this.searchResults.style.display = 'block';
+  }
+
+  getPresenceText(user) {
+    if (user.is_online) {
+      return '<span class="status-online">Online</span>';
+    } else if (user.last_seen) {
+      return `Last seen ${this.formatLastSeen(user.last_seen)}`;
+    }
+    return '<span class="status-offline">Offline</span>';
+  }
+
+  formatLastSeen(lastSeen) {
+    const now = new Date();
+    const lastSeenDate = new Date(lastSeen);
+    const diffMs = now - lastSeenDate;
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMins / 60);
+    const diffDays = Math.floor(diffHours / 24);
+
+    if (diffMins < 1) return 'just now';
+    if (diffMins < 60) return `${diffMins}m ago`;
+    if (diffHours < 24) return `${diffHours}h ago`;
+    if (diffDays < 7) return `${diffDays}d ago`;
+    return lastSeenDate.toLocaleDateString();
   }
 
   async startConversation(userId) {
@@ -233,6 +282,10 @@ class ChatApp {
         this.messageInput.value = '';
         this.messageInput.style.height = 'auto';
         this.hideEmojiPicker();
+        
+        // Add message to UI immediately for sender
+        this.addMessageToUI(result.message);
+        this.scrollToBottom();
       }
     } catch (error) {
       console.error('Send message error:', error);
@@ -255,7 +308,11 @@ class ChatApp {
 
       const result = await response.json();
       
-      if (!result.success) {
+      if (result.success) {
+        // Add message to UI immediately for sender
+        this.addMessageToUI(result.message);
+        this.scrollToBottom();
+      } else {
         alert('Failed to send image');
       }
     } catch (error) {
@@ -264,7 +321,7 @@ class ChatApp {
   }
 
   handleNewMessage(message) {
-    // Don't add message if it's from current user (to avoid duplicates)
+    // Only add message if it's NOT from current user (to avoid duplicates)
     if (message.sender_id === this.currentUser?.id) return;
 
     this.addMessageToUI(message);
@@ -304,6 +361,33 @@ class ChatApp {
     `;
 
     return div;
+  }
+
+  updateUserStatus(profile) {
+    // Update online status indicators
+    const statusElements = document.querySelectorAll(`[data-user-id="${profile.id}"]`);
+    statusElements.forEach(element => {
+      const indicator = element.querySelector('.online-indicator');
+      const statusText = element.querySelector('.status-text');
+      
+      if (indicator) {
+        indicator.style.display = profile.is_online ? 'block' : 'none';
+      }
+      
+      if (statusText) {
+        statusText.textContent = profile.is_online ? 'Online' : 
+          `Last seen ${this.formatLastSeen(profile.last_seen)}`;
+        statusText.className = profile.is_online ? 'status-online' : 'status-offline';
+      }
+    });
+
+    // Update header status in conversation view
+    const headerStatus = document.querySelector('.chat-header .status-text');
+    if (headerStatus) {
+      headerStatus.textContent = profile.is_online ? 'Online' : 
+        `Last seen ${this.formatLastSeen(profile.last_seen)}`;
+      headerStatus.className = profile.is_online ? 'status-online' : 'status-offline';
+    }
   }
 
   toggleEmojiPicker() {
@@ -346,14 +430,6 @@ class ChatApp {
     if (this.messagesContainer) {
       this.messagesContainer.scrollTop = this.messagesContainer.scrollHeight;
     }
-  }
-
-  updateUserStatus(profile) {
-    // Update online status indicators
-    const indicators = document.querySelectorAll(`[data-user-id="${profile.id}"] .online-indicator`);
-    indicators.forEach(indicator => {
-      indicator.style.display = profile.is_online ? 'block' : 'none';
-    });
   }
 
   openImagePreview(src) {
@@ -406,6 +482,17 @@ class ChatApp {
       timeout = setTimeout(later, wait);
     };
   }
+
+  // Cleanup method
+  cleanup() {
+    if (this.messageSubscription) {
+      this.supabase.removeChannel(this.messageSubscription);
+    }
+    if (this.presenceSubscription) {
+      this.supabase.removeChannel(this.presenceSubscription);
+    }
+    this.updateOnlineStatus(false);
+  }
 }
 
 // Initialize chat app when DOM is loaded
@@ -413,27 +500,22 @@ document.addEventListener('DOMContentLoaded', () => {
   window.chatApp = new ChatApp();
 });
 
-// Update user online status
-window.addEventListener('beforeunload', async () => {
-  if (window.chatApp?.supabase && window.chatApp?.currentUser) {
-    await window.chatApp.supabase
-      .from('profiles')
-      .update({ 
-        is_online: false,
-        last_seen: new Date().toISOString()
-      })
-      .eq('id', window.chatApp.currentUser.id);
+// Update user online status on page events
+window.addEventListener('beforeunload', () => {
+  if (window.chatApp) {
+    window.chatApp.cleanup();
   }
 });
 
-// Set user as online when page loads
-window.addEventListener('load', async () => {
-  if (window.chatApp?.supabase && window.chatApp?.currentUser) {
-    await window.chatApp.supabase
-      .from('profiles')
-      .update({ 
-        is_online: true 
-      })
-      .eq('id', window.chatApp.currentUser.id);
+window.addEventListener('load', () => {
+  if (window.chatApp) {
+    window.chatApp.updateOnlineStatus(true);
+  }
+});
+
+// Handle visibility changes (tab switch)
+document.addEventListener('visibilitychange', () => {
+  if (window.chatApp) {
+    window.chatApp.updateOnlineStatus(!document.hidden);
   }
 });

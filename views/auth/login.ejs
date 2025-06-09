@@ -1,37 +1,94 @@
+<!-- views/auth/login.ejs -->
 <%- include('../layouts/main.ejs') %>
 
-<div class="form-container">
-    <div class="form-card">
-        <h1 class="text-center mb-2">Login to Chat</h1>
-        
-        <% if (locals.error) { %>
-            <div class="text-red text-sm text-center mb-2">
-                <%= error %>
-            </div>
-        <% } %>
-        
-        <% if (locals.message) { %>
-            <div class="text-green text-sm text-center mb-2">
-                <%= message %>
-            </div>
-        <% } %>
-        
-        <form action="/auth/login" method="POST">
-            <div class="form-group">
-                <label for="email" class="form-label">Email</label>
-                <input type="email" id="email" name="email" class="form-input" required>
+<div id="app-container" class="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 flex items-center justify-center p-4">
+    <div class="w-full max-w-md">
+        <div class="bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl border border-gray-200/50 p-8">
+            <!-- Logo/Header -->
+            <div class="text-center mb-8">
+                <div class="w-20 h-20 mx-auto bg-gradient-to-r from-blue-500 to-purple-600 rounded-3xl flex items-center justify-center mb-4">
+                    <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+                    </svg>
+                </div>
+                <h1 class="text-2xl font-bold text-gray-900 mb-2">Welcome Back</h1>
+                <p class="text-gray-600">Sign in to continue your conversations</p>
             </div>
             
-            <div class="form-group">
-                <label for="password" class="form-label">Password</label>
-                <input type="password" id="password" name="password" class="form-input" required>
-            </div>
+            <!-- Error/Success Messages -->
+            <% if (locals.error) { %>
+                <div class="mb-6 p-4 bg-red-50 border border-red-200 rounded-2xl">
+                    <div class="flex items-center space-x-2">
+                        <svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                        <p class="text-sm text-red-700"><%= error %></p>
+                    </div>
+                </div>
+            <% } %>
             
-            <button type="submit" class="btn btn-primary btn-block">Login</button>
-        </form>
-        
-        <div class="text-center mt-2">
-            <a href="/auth/register" class="text-sm">Don't have an account? Register</a>
-        </div>
-    </div>
+            <% if (locals.message) { %>
+                <div class="mb-6 p-4 bg-green-50 border border-green-200 rounded-2xl">
+                    <div class="flex items-center space-x-2">
+                        <svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                        <p class="text-sm text-green-700"><%= message %></p>
+                    </div>
+                </div>
+            <% } %>
+            
+            <!-- Login Form -->
+            <form action="/auth/login" method="POST" class="space-y-6">
+                <div>
+                    <label for="email" class="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207"/>
+                            </svg>
+                        </div>
+                        <input type="email" 
+                               id="email" 
+                               name="email" 
+                               required
+                              class="w-full pl-10 pr-4 py-3 bg-gray-50/80 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-transparent transition-all duration-200"
+                              placeholder="Enter your email">
+                   </div>
+               </div>
+               
+               <div>
+                   <label for="password" class="block text-sm font-medium text-gray-700 mb-2">Password</label>
+                   <div class="relative">
+                       <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                           <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                           </svg>
+                       </div>
+                       <input type="password" 
+                              id="password" 
+                              name="password" 
+                              required
+                              class="w-full pl-10 pr-4 py-3 bg-gray-50/80 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-transparent transition-all duration-200"
+                              placeholder="Enter your password">
+                   </div>
+               </div>
+               
+               <button type="submit" 
+                       class="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white py-3 rounded-2xl font-medium hover:from-blue-600 hover:to-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all duration-200 shadow-lg hover:shadow-xl">
+                   Sign In
+               </button>
+           </form>
+           
+           <!-- Register Link -->
+           <div class="text-center mt-6">
+               <p class="text-gray-600">
+                   Don't have an account? 
+                   <a href="/auth/register" class="text-blue-600 hover:text-blue-700 font-medium transition-colors">
+                       Create one
+                   </a>
+               </p>
+           </div>
+       </div>
+   </div>
 </div>
