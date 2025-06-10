@@ -63,3 +63,11 @@ setInterval(async () => {
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
+module.exports = app;
+
+// Only listen when not in serverless environment
+if (process.env.NODE_ENV !== 'production') {
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+  });
+}
