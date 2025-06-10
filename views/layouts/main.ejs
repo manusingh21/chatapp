@@ -1,18 +1,21 @@
-<!-- views/layouts/main.ejs -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><%=  'Chat App' %></title>
+    <title>Chatify</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="/css/style.css">
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    
+    <!-- Add emoji-picker-element -->
+  <!-- <script src="https://cdn.jsdelivr.net/npm/@joeattardi/emoji-button@4.6.4/dist/index.min.js"></script -->
+    
     <script>
         window.SUPABASE_URL = '<%= process.env.SUPABASE_URL %>';
         window.SUPABASE_ANON_KEY = '<%= process.env.SUPABASE_ANON_KEY %>';
         
-        // Tailwind config for custom colors
+        // Tailwind config...
         tailwind.config = {
             theme: {
                 extend: {
@@ -48,9 +51,34 @@
     </script>
 </head>
 <body class="bg-gray-50 font-sans antialiased">
-  
-      
-   
     <script src="/js/chat.js"></script>
+    <script>
+// Helper function for better date formatting
+function formatLastSeen(lastSeen) {
+  if (!lastSeen) return 'Never';
+  
+  const now = new Date();
+  const lastSeenDate = new Date(lastSeen);
+  const diffMs = now - lastSeenDate;
+  const diffMins = Math.floor(diffMs / 60000);
+  const diffHours = Math.floor(diffMins / 60);
+  const diffDays = Math.floor(diffHours / 24);
+
+  if (diffMins < 1) return 'just now';
+  if (diffMins < 60) return `${diffMins}m ago`;
+  if (diffHours < 24) return `${diffHours}h ago`;
+  if (diffDays < 7) return `${diffDays}d ago`;
+  return lastSeenDate.toLocaleDateString();
+}
+
+// Update last seen timestamps every minute
+setInterval(() => {
+  document.querySelectorAll('.status-text').forEach(element => {
+    if (element.textContent.includes('Last seen') && element.dataset.lastSeen) {
+      element.textContent = `Last seen ${formatLastSeen(element.dataset.lastSeen)}`;
+    }
+  });
+}, 60000); // Update every minute
+</script>
 </body>
 </html>

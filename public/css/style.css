@@ -648,3 +648,25 @@ textarea:focus-visible {
     40% { content: '..'; }
     60%, 100% { content: '...'; }
 }
+.status-online {
+  color: #10b981;
+  font-weight: 500;
+}
+
+.status-offline {
+  color: #6b7280;
+}
+
+.online-indicator {
+  background-color: #10b981;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}

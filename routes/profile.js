@@ -1,5 +1,5 @@
 const express = require('express');
-const supabase = require('../config/supabase');
+const {supabase} = require('../config/supabase');
 const upload = require('../utils/fileUpload');
 const router = express.Router();
 

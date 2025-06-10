@@ -3,7 +3,7 @@ const session = require('express-session');
 const path = require('path');
 const cors = require('cors');
 require('dotenv').config();
-
+const {supabase} = require('./config/supabase.js'); // Ensure this points to your Supabase client setup
 const authRoutes = require('./routes/auth');
 const chatRoutes = require('./routes/chat');
 const profileRoutes = require('./routes/profile');
@@ -43,6 +43,22 @@ app.get('/', (req, res) => {
     res.redirect('/auth/login');
   }
 });
+// Periodic cleanup to mark users as offline after 5 minutes of inactivity
+setInterval(async () => {
+  try {
+    const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+    
+    await supabase
+      .from('profiles')
+      .update({ is_online: false })
+      .lt('last_seen', fiveMinutesAgo)
+      .eq('is_online', true);
+    
+    console.log('Updated offline users');
+  } catch (error) {
+    console.error('Failed to update offline users:', error);
+  }
+}, 2 * 60 * 1000); // Run every 2 minutes
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
